@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fn-1-jev-predict-skill · Jev-predict skill</title>
+<style>
+:root {
+  --bg: #0c0b09; --panel: #14120e; --panel-2: #1a1712;
+  --line: #2c2719; --line-soft: #211d14;
+  --ink: #e8e2d4; --dim: #9a917c; --faint: #645d4c;
+  --amber: #ffb454; --amber-deep: #cc8b33;
+  --green: #87d96c; --red: #f07178; --cyan: #5ccfe6; --violet: #c9a7f5;
+  --mono: "Berkeley Mono", "JetBrains Mono", "SF Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+body {
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.65;
+  padding: 28px 36px 72px;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,180,84,0.012) 2px 4px),
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(255,180,84,0.05), transparent 60%);
+}
+nav.rail {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; flex-wrap: wrap; gap: 18px;
+  padding: 10px 0 12px;
+  background: rgba(12,11,9,0.86);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+  margin: 0 0 28px;
+}
+nav.rail a {
+  color: var(--faint); text-decoration: none;
+  font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+}
+nav.rail a:hover { color: var(--amber); }
+.kicker {
+  font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--amber); margin: 0 0 10px;
+}
+.kicker .sep { color: var(--faint); }
+h1 { font-size: 28px; font-weight: 700; margin: 0 0 18px; letter-spacing: .01em; }
+h1 .id { color: var(--amber); }
+.dials {
+  display: flex; flex-wrap: wrap;
+  border: 1px solid var(--line); background: var(--panel);
+  margin: 0 0 36px;
+}
+.dial {
+  flex: 1 1 120px; padding: 14px 16px;
+  border-right: 1px solid var(--line);
+}
+.dial:last-child { border-right: none; }
+.dial .v { font-size: 19px; font-weight: 700; color: var(--ink); }
+.dial .c { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin-top: 4px; }
+.tldr {
+  font-family: var(--serif); font-size: 20px; line-height: 1.6;
+  max-width: 920px; color: var(--ink); margin: 0 0 18px;
+}
+.tldr strong { color: var(--amber); font-weight: 600; }
+.tldr em { color: var(--cyan); font-style: italic; }
+.thesis {
+  border: 1px solid var(--line); border-left: 3px solid var(--amber);
+  background: var(--panel); padding: 14px 16px; margin: 0 0 36px; max-width: 920px;
+  color: var(--dim);
+}
+section { margin: 0 0 40px; animation: rise .45s ease both; }
+section:nth-of-type(1) { animation-delay: .05s; }
+section:nth-of-type(2) { animation-delay: .10s; }
+section:nth-of-type(3) { animation-delay: .15s; }
+section:nth-of-type(4) { animation-delay: .20s; }
+section:nth-of-type(5) { animation-delay: .25s; }
+section:nth-of-type(6) { animation-delay: .30s; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.shead {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 16px;
+}
+.shead .num { color: var(--amber); font-size: 17px; }
+.shead h2 {
+  font-size: 17px; letter-spacing: .14em; text-transform: uppercase;
+  margin: 0; font-weight: 600;
+}
+.shead .note { margin-left: auto; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--faint); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--line);
+}
+td { padding: 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--dim); }
+tr:hover td { color: var(--ink); background: #1c170d; }
+td.rid { color: var(--amber); font-weight: 700; white-space: nowrap; }
+.tagchip {
+  display: inline-block; border: 1px solid var(--line); padding: 1px 7px;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-right: 4px;
+}
+.tagchip.user { color: var(--green); border-color: #355a2e; }
+.tagchip.paraphrase { color: var(--cyan); border-color: #2a5a66; }
+.tagchip.inferred { color: var(--red); border-color: #6a2e32; }
+details summary { cursor: pointer; color: var(--ink); }
+details .more { margin-top: 8px; color: var(--dim); }
+.archgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.archbox {
+  border: 1px solid var(--line); background: var(--panel); padding: 14px 16px;
+}
+.archbox .cap { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+.edges {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.ecard {
+  border: 1px solid var(--line); background: var(--panel); padding: 14px 16px;
+}
+.ecard.miss { border-left: 3px solid var(--red); }
+.ecard.gate { border-left: 3px solid var(--amber); }
+.ecard.ok { border-left: 3px solid var(--green); }
+.ecard .cap { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+.bounds { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bounds ul { margin: 0; padding: 0 0 0 18px; }
+.bounds .is { border: 1px solid var(--line); background: var(--panel); padding: 14px 16px; }
+.bounds .isnot { border: 1px solid var(--line); background: var(--panel); padding: 14px 16px; }
+.bounds .is li::marker { content: "✓ "; color: var(--green); }
+.bounds .isnot li::marker { content: "✕ "; color: var(--red); }
+.bounds .cap { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+.dec {
+  border: 1px solid var(--line); background: var(--panel); padding: 14px 16px;
+}
+.dec .dtag { color: var(--amber); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+.dec .chosen { margin: 8px 0; color: var(--ink); }
+.dec .ev { color: var(--green); font-style: italic; }
+.dec .rej { color: var(--red); }
+.parked {
+  border: 1px solid var(--line); background: var(--panel); padding: 14px 16px;
+  color: var(--dim);
+}
+.parked li { margin: 0 0 8px; }
+footer.stamp {
+  border: 1px solid var(--line); background: var(--panel);
+  padding: 14px 16px; color: var(--dim); font-size: 12px;
+}
+footer.stamp .lens { color: var(--faint); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; margin-bottom: 8px; }
+@media (max-width: 760px) {
+  body { padding: 18px 16px 56px; }
+  .archgrid, .edges, .bounds { grid-template-columns: 1fr; }
+  .dial { border-right: none; border-bottom: 1px solid var(--line); }
+}
+@media print {
+  :root { --bg:#fff; --panel:#fafaf7; --panel-2:#f2f0ea; --line:#ccc7ba; --line-soft:#e2ded2;
+          --ink:#1a1812; --dim:#4a463c; --faint:#8a8678; --amber:#9a6a10; --amber-deep:#9a6a10;
+          --green:#2e7d32; --red:#b3261e; --cyan:#0a6e8a; --violet:#6a3fae; }
+  body::before { display: none; }
+  nav.rail, .progress { display: none; }
+  section { break-inside: avoid-page; animation: none; }
+  @page { size: A4; margin: 1.2cm; }
+}
+</style>
+</head>
+<body>
+<nav class="rail">
+  <a href="#thesis">Thesis</a>
+  <a href="#criteria">Criteria</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#edges">Edges</a>
+  <a href="#boundaries">Boundaries</a>
+  <a href="#decision">Decision</a>
+</nav>
+
+<p class="kicker">Spec lens <span class="sep">·</span> fn-1-jev-predict-skill <span class="sep">·</span> 2026-09-16</p>
+<h1><span class="id">fn-1</span> Jev-predict skill</h1>
+<div class="dials">
+  <div class="dial"><div class="v">draft</div><div class="c">Status</div></div>
+  <div class="dial"><div class="v">5</div><div class="c">R-IDs</div></div>
+  <div class="dial"><div class="v">no-plan</div><div class="c">Activation</div></div>
+  <div class="dial"><div class="v">off</div><div class="c">Tracker</div></div>
+</div>
+
+<section id="thesis">
+  <div class="shead"><span class="num">01</span><h2>Thesis</h2><span class="note">scope: business</span></div>
+  <p class="tldr">A <strong>/jev-predict-skill</strong> that takes any skill as an argument, first asks whether it is <em>predictable by jev</em>, and for <strong>/flow-next-flow</strong> names the phase the conductor would choose — without running it.</p>
+  <div class="thesis">Load-bearing: assessment is a gate. If Jev cannot break the skill into structured outcomes, report that and invent nothing. The flow-next-flow case is a phase prediction, not a live hop.</div>
+</section>
+
+<section id="criteria">
+  <div class="shead"><span class="num">02</span><h2>Acceptance</h2><span class="note">5 criteria</span></div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Criterion</th><th>Provenance</th></tr>
+    </thead>
+    <tbody>
+      <tr data-rid="R1">
+        <td class="rid">R1</td>
+        <td>
+          <details>
+            <summary>Takes any skill as an "argument".</summary>
+            <div class="more">Errors: missing argument → report that no skill was given and produce no prediction; argument that cannot be read as a skill → report that and produce no prediction.</div>
+          </details>
+        </td>
+        <td><span class="tagchip paraphrase">paraphrase</span></td>
+      </tr>
+      <tr data-rid="R2">
+        <td class="rid">R2</td>
+        <td>
+          <details>
+            <summary>First assesses if the skill is predictable by jev — structured outcomes.</summary>
+            <div class="more">Errors: assessment cannot complete → report the failure and produce no prediction.</div>
+          </details>
+        </td>
+        <td><span class="tagchip paraphrase">paraphrase</span></td>
+      </tr>
+      <tr data-rid="R3">
+        <td class="rid">R3</td>
+        <td>
+          <details>
+            <summary>For /flow-next-flow, predict the conductor phase without running the conductor.</summary>
+            <div class="more">Errors: no error surface beyond R1 and R2 when the argument is /flow-next-flow and R2 finds it predictable.</div>
+          </details>
+        </td>
+        <td><span class="tagchip paraphrase">paraphrase</span></td>
+      </tr>
+      <tr data-rid="R4">
+        <td class="rid">R4</td>
+        <td>
+          <details>
+            <summary>If not predictable by jev, report that and invent no prediction.</summary>
+            <div class="more">Errors: no error surface beyond the explicit not-predictable report.</div>
+          </details>
+        </td>
+        <td><span class="tagchip inferred">inferred</span></td>
+      </tr>
+      <tr data-rid="R5">
+        <td class="rid">R5</td>
+        <td>
+          <details>
+            <summary>If predictable and not /flow-next-flow, emit discrete structured outcomes.</summary>
+            <div class="more">Errors: no error surface beyond R1 and R2.</div>
+          </details>
+        </td>
+        <td><span class="tagchip paraphrase">paraphrase</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="architecture">
+  <div class="shead"><span class="num">03</span><h2>Architecture</h2><span class="note">from API contracts</span></div>
+  <div class="archgrid">
+    <div class="archbox">
+      <div class="cap">Input</div>
+      Any skill as an argument.
+    </div>
+    <div class="archbox">
+      <div class="cap">Gate</div>
+      Predictable by jev? Can it break into structured outcomes?
+    </div>
+    <div class="archbox">
+      <div class="cap">Output</div>
+      Phase name for /flow-next-flow; discrete outcomes otherwise; or an explicit not-predictable report.
+    </div>
+  </div>
+</section>
+
+<section id="edges">
+  <div class="shead"><span class="num">04</span><h2>Edge cases</h2><span class="note">from R-ID errors</span></div>
+  <div class="edges">
+    <div class="ecard miss">
+      <div class="cap">Missing or unreadable</div>
+      Report and produce no prediction (R1).
+    </div>
+    <div class="ecard gate">
+      <div class="cap">Assessment fails</div>
+      Report the failure and produce no prediction (R2).
+    </div>
+    <div class="ecard ok">
+      <div class="cap">Not predictable</div>
+      Report that result; invent no structured prediction or phase (R4).
+    </div>
+  </div>
+</section>
+
+<section id="boundaries">
+  <div class="shead"><span class="num">05</span><h2>Boundaries</h2><span class="note">scope: business</span></div>
+  <div class="bounds">
+    <div class="is">
+      <div class="cap">Is</div>
+      <ul>
+        <li>Assess Jev-predictability of a skill argument</li>
+        <li>Predict the flow-next phase for /flow-next-flow</li>
+        <li>Emit discrete structured outcomes when predictable</li>
+      </ul>
+    </div>
+    <div class="isnot">
+      <div class="cap">Is not</div>
+      <ul>
+        <li>Does not actually run the conductor</li>
+        <li>Does not execute or implement the argument skill</li>
+        <li>Does not replace /flow-next-flow</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="decision">
+  <div class="shead"><span class="num">06</span><h2>Decision</h2><span class="note">flat</span></div>
+  <div class="dec">
+    <div class="dtag">D1 · prediction over execution</div>
+    <div class="chosen">Predict the conductor's next phase without running the hop loop.</div>
+    <div class="ev">“without actually running the conductor”</div>
+    <div class="rej">Rejected: a live /flow-next-flow run that chooses the phase by executing it.</div>
+  </div>
+  <div class="parked" style="margin-top:12px">
+    <div class="cap" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px">Parked unknowns</div>
+    <ul>
+      <li>Exact fields of a structured-outcomes prediction beyond the /flow-next-flow phase case.</li>
+      <li>How a skill argument is resolved (slash name, skill file, or pasted body).</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="stamp">
+  <div class="lens">Render lens, not record.</div>
+  Source: .flow/specs/fn-1-jev-predict-skill.md<br>
+  staleness stamp · spec updated_at 2026-09-16T17:29:29.659106Z · repo commit none · rendered 2026-09-16
+</footer>
+</body>
+</html>
