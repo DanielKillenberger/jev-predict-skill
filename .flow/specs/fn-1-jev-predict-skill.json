@@ -8,12 +8,145 @@
   "default_sync": null,
   "depends_on_epics": [],
   "id": "fn-1-jev-predict-skill",
-  "impl_review_rounds": {},
+  "impl_review_rounds": {
+    "fn-1-jev-predict-skill.1": 1
+  },
   "next_task": 1,
   "no_plan": true,
   "plan_review_rounds": 0,
   "plan_review_status": "unknown",
   "plan_reviewed_at": null,
+  "review_attempts": [
+    {
+      "artifact_sha256": "f85f7fcabd461fc7a1eda7660436b526a615f44e4f71bf56719ddee36cd841b1",
+      "backend": "host",
+      "counter_kind": "impl",
+      "failure_class": null,
+      "finalized": {
+        "digest": "complete",
+        "receipt": "complete",
+        "status": "not_applicable"
+      },
+      "findings_digest": {
+        "backend": "host",
+        "digest_truncated": false,
+        "items": [
+          {
+            "chainRoot": "finding-5cab964163e2fd585f8c5205f06723d5",
+            "classification": "introduced",
+            "findingId": "finding-5cab964163e2fd585f8c5205f06723d5",
+            "firstSeenThisRound": true,
+            "severity": "P1",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-e4ff78e87c52d0cc91a33feeadad04a1",
+            "classification": "introduced",
+            "findingId": "finding-e4ff78e87c52d0cc91a33feeadad04a1",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-fe3078b1e765aedea168b9621c47dc17",
+            "classification": "introduced",
+            "findingId": "finding-fe3078b1e765aedea168b9621c47dc17",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-0ac7913799f6f7c7b93d54fea9d0102d",
+            "classification": "introduced",
+            "findingId": "finding-0ac7913799f6f7c7b93d54fea9d0102d",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-09c0ed9b2b93f1133188d14acd01cde7",
+            "classification": "introduced",
+            "findingId": "finding-09c0ed9b2b93f1133188d14acd01cde7",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-8ad4cb6a6be509077b55cd7595b27fb2",
+            "classification": "introduced",
+            "findingId": "finding-8ad4cb6a6be509077b55cd7595b27fb2",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-feb82d29cacb47581d15bd1590489d17",
+            "classification": "introduced",
+            "findingId": "finding-feb82d29cacb47581d15bd1590489d17",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-cd8ddb4a9738440b25b5468e405b0712",
+            "classification": "introduced",
+            "findingId": "finding-cd8ddb4a9738440b25b5468e405b0712",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-46c8d82ceefefd5a4875cbc0a102fd5b",
+            "classification": "introduced",
+            "findingId": "finding-46c8d82ceefefd5a4875cbc0a102fd5b",
+            "firstSeenThisRound": true,
+            "severity": "P2",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-e05365c62af01a5fc13a2bbd5d969ddb",
+            "classification": "introduced",
+            "findingId": "finding-e05365c62af01a5fc13a2bbd5d969ddb",
+            "firstSeenThisRound": true,
+            "severity": "P3",
+            "status": "open"
+          },
+          {
+            "chainRoot": "finding-a6d7b1ddc36b93f2a935d33fbc398f96",
+            "classification": "introduced",
+            "findingId": "finding-a6d7b1ddc36b93f2a935d33fbc398f96",
+            "firstSeenThisRound": true,
+            "severity": "P3",
+            "status": "open"
+          }
+        ],
+        "reviewKind": "implementation"
+      },
+      "forced": false,
+      "hash_epoch": 1,
+      "head_sha": "1a787723ecd8c4f7c2563e0bb4e501d70f229ae3",
+      "head_sha_observed": false,
+      "kind": "impl",
+      "outcome": "verdict",
+      "output_bytes": 8970,
+      "output_sha256": "a2e52744813690d0d058917ed544ac90eb63d24f3eaf91e789898d7bb941c36f",
+      "reservation_id": "3f24a9f50aba4509a6e1e68323c8baf8",
+      "round_consumed": true,
+      "scope": "impl:fn-1-jev-predict-skill.1",
+      "superseded_by": null,
+      "task": "fn-1-jev-predict-skill.1",
+      "timestamp": "2026-09-16T18:27:53.471893Z",
+      "verdict": "NEEDS_WORK"
+    }
+  ],
+  "review_hash_epoch": {
+    "impl:fn-1-jev-predict-skill.1": 1
+  },
+  "review_pending_rounds": {},
+  "review_reservations": {},
+  "review_transport_failures": {
+    "impl:fn-1-jev-predict-skill.1": 0
+  },
   "spec_path": ".flow/specs/fn-1-jev-predict-skill.md",
   "status": "open",
   "title": "Jev-predict skill",
@@ -28,5 +161,5 @@
     "mergeBaseTracker": null,
     "url": null
   },
-  "updated_at": "2026-09-16T17:36:44.150845Z"
+  "updated_at": "2026-09-16T18:27:53.953589Z"
 }
