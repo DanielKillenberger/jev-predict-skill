@@ -36,10 +36,11 @@ mid-run.
   - instructions: `Can this skill be broken into a predetermined, closed set of decision outcomes that Jev can select among?`
   - criteria.true: `The skill makes one or more finite named decisions a Choice can cover without inventing labels.`
   - criteria.false: `Outcomes are open-ended generation, undecomposable work with no closed labels, or not a match for Jev.`
-- **Breakdown noul:** ≥ `0.65` means extract and predict. Below that, report that it cannot be broken down. Produce no prediction.
+- **Breakdown noul:** read `answers.can_break_down.noul`. ≥ `0.65` means extract and predict. Below that, report that it cannot be broken down. Produce no prediction.
 - **Selection question** (`type: choice`, id `outcome`):
   - instructions: `Which closed decision outcome would running this skill produce right now? Pick only from the provided options. Do not invent a new outcome.`
-  - Always include option `none_of_the_above`.
+  - API field is `criteria`, a map of label → short description or `null`. There is no `options` field.
+  - Always include the `criteria` key `none_of_the_above`.
 - **Jev:** `POST https://api.typesafe.ai/v1/systemone` with `model: "jev-latest"`.
 - **HTTP:** Capture `%{http_code}`. Retry `429` and `529` up to twice with 1s then 2s backoff. Report `401` as auth failure, `422` as validation failure, other remaining errors as transient or hard failure. `curl -sS` alone is not a failure signal.
 
@@ -70,7 +71,7 @@ Gather that **read-only** and keep it small: the decision-relevant evidence
 (the change, the contract, status that would change the pick). Do not dump
 unrelated skill manuals. Do not run the argument skill.
 
-Jev `state` (all of these, JSON-encoded; never pasted into a shell quote):
+Jev `state` fields:
 
 - `skill`: argument skill frontmatter plus the decision-relevant body. If
   truncated to stay compact, say so in the field.
@@ -78,25 +79,56 @@ Jev `state` (all of these, JSON-encoded; never pasted into a shell quote):
   its decisions (same truncation rule).
 - `skill_name`, `skill_argument`
 - `needs`, `gathered`, `context`
-- the evidence the decision is made from (compact)
+- `evidence`: the compact facts the decision is made from
 
 If a required fact cannot be gathered, say so in `gathered`. Still try
 breakdown; do not invent the fact.
 
+**State never enters a shell word.** Copy the resolved skill (and excerpts,
+needs, gathered, context, evidence) to temp files with `cp` or a write
+tool. Then assemble. Do not `echo`, heredoc-expand, or `--argjson` a
+variable that holds skill prose.
+
+```bash
+# After writing those files (never interpolating their contents):
+jq -n \
+  --rawfile skill /tmp/jev-predict-skill-body.md \
+  --rawfile skill_files /tmp/jev-predict-skill-files.md \
+  --rawfile needs /tmp/jev-predict-needs.md \
+  --rawfile gathered /tmp/jev-predict-gathered.md \
+  --rawfile context /tmp/jev-predict-context.md \
+  --rawfile evidence /tmp/jev-predict-evidence.md \
+  --arg skill_name "$SKILL_NAME" \
+  --arg skill_argument "$SKILL_ARGUMENT" \
+  '{
+    skill: $skill,
+    skill_files: $skill_files,
+    skill_name: $skill_name,
+    skill_argument: $skill_argument,
+    needs: $needs,
+    gathered: $gathered,
+    context: $context,
+    evidence: $evidence
+  }' > /tmp/jev-predict-state.json
+```
+
+`$SKILL_NAME` and `$SKILL_ARGUMENT` are the resolved name and the raw
+invocation argument (short tokens). Skill body text stays in the files
+above.
+
 ## 3. Can Jev predict this skill?
 
-Write the JSON body with `jq` (or equivalent) to a temp file. Do not
-interpolate state into a single-quoted `-d '...'`. Apostrophes in skill
-prose must survive encoding.
+Build the request from the state file. Do not interpolate state into a
+single-quoted `-d '...'`.
 
 ```bash
 jq -n \
-  --argjson state "$STATE_JSON" \
+  --slurpfile state /tmp/jev-predict-state.json \
   --arg instructions "$BREAKDOWN_INSTRUCTIONS" \
   --arg true_c "$BREAKDOWN_TRUE" \
   --arg false_c "$BREAKDOWN_FALSE" \
   '{
-    state: $state,
+    state: $state[0],
     model: "jev-latest",
     questions: {
       can_break_down: {
@@ -117,11 +149,11 @@ curl -sS -o /tmp/jev-predict-breakdown.out -w "%{http_code}" \
 
 Do not log the bearer token.
 
-- Missing key, HTTP after retries, parse failure, or missing noul → report
-  that assessment failed (name 401 / 422 / transient when known); stop. No
-  prediction.
-- Noul `< 0.65` → report that the skill cannot be broken down for Jev; stop.
-  No prediction.
+- Missing key, HTTP after retries, parse failure, or missing
+  `answers.can_break_down.noul` → report that assessment failed (name
+  401 / 422 / transient when known); stop. No prediction.
+- `answers.can_break_down.noul` `< 0.65` → report that the skill cannot
+  be broken down for Jev; stop. No prediction.
 - Otherwise continue.
 
 ## 4. Break down the next decision (you, not Jev)
@@ -139,27 +171,62 @@ report that it cannot be broken down; stop. No prediction.
 
 Then append `none_of_the_above` if it is missing.
 
+Write the labels one per line to `/tmp/jev-predict-labels.txt` (write
+tool or `cp`, not a quoted echo of skill prose). Then:
+
+```bash
+jq -R -s 'split("\n") | map(select(length > 0))' \
+  /tmp/jev-predict-labels.txt > /tmp/jev-predict-labels.json
+```
+
 Do not Jev-select later sequential decisions in this run. One next Choice
 is the answer.
 
 ## 5. Jev-select
 
-Build the body the same way as section 3 (`jq` to a file, `-d @file`,
-retry `429`/`529`, inspect `http_code`). Selection `criteria` is one
-entry per extracted label (including `none_of_the_above`).
+The Choice question uses `criteria`, not `options`. One map entry per
+extracted label (including `none_of_the_above`).
+
+```bash
+jq -n \
+  --slurpfile state /tmp/jev-predict-state.json \
+  --slurpfile labels /tmp/jev-predict-labels.json \
+  --arg instructions "$SELECT_INSTRUCTIONS" \
+  '
+  ($labels[0] | map({key: ., value: null}) | from_entries) as $criteria |
+  {
+    state: $state[0],
+    model: "jev-latest",
+    questions: {
+      outcome: {
+        type: "choice",
+        instructions: $instructions,
+        criteria: $criteria
+      }
+    }
+  }
+  ' > /tmp/jev-predict-select.json
+
+# Retry 429/529 up to twice (1s, 2s). Inspect http_code, not curl exit only.
+curl -sS -o /tmp/jev-predict-select.out -w "%{http_code}" \
+  https://api.typesafe.ai/v1/systemone \
+  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @/tmp/jev-predict-select.json
+```
 
 Call failure after retries, or a response that lacks any of
 `answers.outcome.choice`, `answers.outcome.confidence`, or
 `answers.outcome.probabilities` → report that selection failed; stop. No
 prediction.
 
-`choice` must be a member of the extracted option set. The probability
-map must include every option. If either check fails → report that
-selection failed; stop. No prediction.
+`choice` must be a member of the extracted `criteria` keys. The
+probability map must include every `criteria` key. If either check
+fails → report that selection failed; stop. No prediction.
 
 `none_of_the_above` → report that Jev found no matching outcome; stop. No
 invented label.
 
 Otherwise report **predicted**: `outcome`, `outcomes`, `confidence`,
-`probabilities`, and the breakdown noul. That is the answer. Do not run
-the argument skill to check it.
+`probabilities`, and `answers.can_break_down.noul`. That is the answer.
+Do not run the argument skill to check it.
